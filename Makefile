@@ -4,16 +4,23 @@ make run:
 chat:
 	uv run streamlit run app.py
 
+# Crea la red si no existe
 network:
-	docker network create monitoring
+	docker network inspect monitoring >/dev/null 2>&1 || docker network create monitoring
 
+#Arranca contenedor si existe, sino lo crea con todos estas variables.
 postgres: network
-	docker run -it \
-		--name course-assistant-pg \
-		--network monitoring \
-		-e POSTGRES_USER=user \
-		-e POSTGRES_PASSWORD=password \
-		-e POSTGRES_DB=course_assistant \
-		-p 5432:5432 \
-		-v pgdata:/var/lib/postgresql/data \
-		postgres:17
+	docker inspect course-assistant-pg >/dev/null 2>&1 \
+		&& docker start course-assistant-pg \
+		|| docker run -it \
+			--name course-assistant-pg \
+			--network monitoring \
+			-e POSTGRES_USER=user \
+			-e POSTGRES_PASSWORD=password \
+			-e POSTGRES_DB=course_assistant \
+			-p 5432:5432 \
+			-v pgdata:/var/lib/postgresql/data \
+			postgres:17
+
+query:
+	uv run python db_query.py
