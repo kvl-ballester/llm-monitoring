@@ -22,5 +22,15 @@ postgres: network
 			-v pgdata:/var/lib/postgresql/data \
 			postgres:17
 
+grafana: network
+	docker inspect grafana >/dev/null 2>&1 \
+		&& docker start -ai grafana \
+		|| docker run -it \
+			--name grafana \
+			--network monitoring \
+			-p 3000:3000 \
+			-v grafana_data:/var/lib/grafana \
+			grafana/grafana
+
 query:
 	uv run python db_query.py
